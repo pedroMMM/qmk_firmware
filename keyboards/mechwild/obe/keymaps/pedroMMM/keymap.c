@@ -14,7 +14,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
- #include QMK_KEYBOARD_H
+#include QMK_KEYBOARD_H
+#include "wait.h"
 
 // Defines names for use in layer keycodes and the keymap
 enum layer_names {
@@ -22,6 +23,35 @@ enum layer_names {
     _FN1,
 	_FN2,
 	_FN3
+};
+
+enum custom_keycodes {
+    KC_OSLK = SAFE_RANGE,
+};
+
+void handle_KC_OSLK(void) {
+    // Mute 1st
+    tap_code(KC_MUTE);
+
+    // MacOS Lock
+    register_code(KC_LGUI);
+    register_code(KC_LCTL);
+    tap_code(KC_Q);
+    unregister_code(KC_LCTL);
+    unregister_code(KC_LGUI);
+
+    // Wait for OS to lock
+    wait_ms(10000);
+    tap_code(KC_ESC);
+}
+
+bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+    switch (keycode) {
+    case KC_OSLK:
+        handle_KC_OSLK();
+        break;
+    }
+    return true;
 };
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
@@ -34,7 +64,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
              KC_LCTL, KC_LALT, KC_LGUI,          KC_SPC,  MO(1),            KC_SPC,           MO(1),   KC_DEL,  KC_LEFT, KC_DOWN, KC_RGHT
     ),
     [_FN1] = LAYOUT(
-    KC_TRNS, KC_GRV,  KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,   KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,  KC_F11,  KC_F12,  KC_TRNS, KC_DEL,
+    KC_TRNS, KC_GRV,  KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,   KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,  KC_F11,  KC_F12,  KC_TRNS, KC_OSLK,
     KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,
     KC_TRNS, KC_CAPS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,          KC_TRNS,
              KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_MPLY, KC_VOLU, KC_MUTE,
